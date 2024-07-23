@@ -3,11 +3,9 @@ FROM python:3.9
 WORKDIR /app
 ARG SECRET_VALUE
 # Copy dependencies
-COPY requirements.txt .
+COPY ./app /code/app
+COPY requirements.txt /code/
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY ./app /app
 
 # Set environment variables if needed
 ENV SECRET_VALUE=${SECRET_VALUE}
