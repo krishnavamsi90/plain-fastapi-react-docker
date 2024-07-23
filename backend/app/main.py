@@ -15,5 +15,6 @@ app.add_middleware(
 )
 @app.get("/")
 async def read_root():
-    return {"Hello": "World"}
+    secret_value = os.getenv("SECRET_VALUE")
+    return {"Hello": "World", "SecretValue": secret_value}
 
