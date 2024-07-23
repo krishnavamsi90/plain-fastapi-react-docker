@@ -1,6 +1,6 @@
 FROM python:3.11
 
-WORKDIR /app
+WORKDIR /code
 ARG SECRET_VALUE
 # Copy dependencies
 COPY ./app /code/app
@@ -12,4 +12,4 @@ ENV SECRET_VALUE=${SECRET_VALUE}
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
