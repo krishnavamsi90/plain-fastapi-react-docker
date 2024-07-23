@@ -1,16 +1,16 @@
-FROM python:3.9-slim
-
-ARG SECRET_VALUE
+FROM python:3.9
 
 WORKDIR /app
-
-ENV SECRET_VALUE=${SECRET_VALUE}
-
+ARG SECRET_VALUE
+# Copy dependencies and install them
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app /code/app
+# Copy application code
+COPY ./app /app
+
+# Set environment variables
+ENV SECRET_VALUE=${SECRET_VALUE}
 
 EXPOSE 8000
 
