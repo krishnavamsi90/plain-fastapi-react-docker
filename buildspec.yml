@@ -8,7 +8,7 @@ phases:
       - echo "Fetching secrets from AWS Secrets Manager..."
       - secret_json=$(aws secretsmanager get-secret-value --secret-id dev/app --query "SecretString" --output text)
       - export SECRET_VALUE=$(echo $secret_json | jq -r .SECRET_VALUE)
-      - echo "Secret Value: $SECRET_VALUE"
+
   build:
     commands:
       - echo "Running tests..."
