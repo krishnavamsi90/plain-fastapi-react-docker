@@ -1,15 +1,18 @@
-# Use an official Python runtime as a parent image
-FROM python:3.8-slim
+# Use the official Python image from the Docker Hub
+FROM python:3.11
 
-# Set the working directory in the container
+# Set the working directory inside the container
+WORKDIR /app
 
+# Copy the requirements file and install dependencies
+COPY requirements.txt /app
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the current directory contents into the container at /code
-COPY ./app /app
-COPY requirements.txt .
+# Copy the FastAPI app code into the container
+COPY . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+# Expose the port that the FastAPI app will run on
+EXPOSE 8000
 
-# Run app.py when the container launches
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+# Command to run the FastAPI app using Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
