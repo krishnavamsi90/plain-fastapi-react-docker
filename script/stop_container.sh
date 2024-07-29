@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /
+cd /home/ubuntu
 
 # Print current working directory
 echo "Current directory: $(pwd)"
