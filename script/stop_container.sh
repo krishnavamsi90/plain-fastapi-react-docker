@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-# Stop the running container (if any)
-set -e
+cd /path/to/root
 
 # Print current working directory
 echo "Current directory: $(pwd)"
