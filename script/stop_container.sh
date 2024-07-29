@@ -2,7 +2,16 @@
 set -e
 
 # Stop the running container (if any)
-docker compose down 
+set -e
+
+# Print current working directory
+echo "Current directory: $(pwd)"
+
+# List files in the current directory
+ls -l
+
+# Stop the running container (if any)
+docker compose down
 
 CONTAINERS=$(docker ps -aq)
 
