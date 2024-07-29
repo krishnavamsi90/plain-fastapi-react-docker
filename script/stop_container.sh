@@ -11,7 +11,7 @@ ls -l
 
 # Stop the running container (if any)
 docker compose down
-
+docker rmi $(docker images -q)
 CONTAINERS=$(docker ps -aq)
 
 if [ -n "${CONTAINERS}" ]; then
