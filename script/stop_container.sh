@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /path/to/root
+cd /
 
 # Print current working directory
 echo "Current directory: $(pwd)"
