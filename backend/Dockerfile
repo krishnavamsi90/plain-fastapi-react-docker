@@ -1,6 +1,13 @@
 # Use the official Python image from the Docker Hub
 FROM python:3.7
 
+
+ARG SECRET_KEY
+ARG REGION
+
+ENV SECRET_KEY=${SECRET_KEY}
+ENV REGION=${REGION}
+
 # Set the working directory inside the container
 WORKDIR /app
 
