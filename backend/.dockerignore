@@ -1,7 +1,10 @@
-__pycache__
+# Exclude Python bytecode files and cache directories
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Exclude environment and log files
 .Python
 .env*
 pip-log.txt
@@ -10,11 +13,17 @@ pip-delete-this-directory.txt
 .coverage
 .coverage.*
 .cache
+
+# Exclude test and coverage results
 nosetests.xml
 coverage.xml
 *,cover
 *.log
+
+# Exclude Git files and directories
 .git*
+
+# Exclude directories specific to development
 tests
 scripts
 postman
