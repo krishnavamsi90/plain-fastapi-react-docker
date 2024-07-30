@@ -11,9 +11,17 @@ ls -l
 
 # Stop the running container (if any)
 docker compose down
-docker rmi $(docker images -q)
-CONTAINERS=$(docker ps -aq)
 
+# Remove all Docker images
+IMAGES=$(docker images -q)
+if [ -n "${IMAGES}" ]; then
+    docker rmi ${IMAGES}
+else
+    echo "No images to remove."
+fi
+
+# Stop and remove all Docker containers
+CONTAINERS=$(docker ps -aq)
 if [ -n "${CONTAINERS}" ]; then
     docker stop ${CONTAINERS}
     docker container prune -f
