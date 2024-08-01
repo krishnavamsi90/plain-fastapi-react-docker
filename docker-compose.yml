@@ -5,9 +5,23 @@ services:
     image: 209314125202.dkr.ecr.ap-southeast-1.amazonaws.com/backend:latest
     ports:
       - "8000:8000"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: "docker-logs"
+        awslogs-region: "ap-southeast-1"
+        awslogs-stream: "backend"
+        awslogs-create-group: "true"
 
   frontend:
     image: 209314125202.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:latest
     ports:
       - "80:80"
-
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: "docker-logs"
+        awslogs-region: "ap-southeast-1"
+        awslogs-stream: "frontend"
+        awslogs-create-group: "true"
+  
