@@ -1,18 +1,13 @@
 version: '3.8'
+
 services:
   backend:
-    build: ./backend
+    image: 209314125202.dkr.ecr.ap-southeast-1.amazonaws.com/backend:latest
     ports:
-      - "80:80"
-    volumes:
-      - ./backend/app:/code/app
+      - "8000:8000"
 
   frontend:
-    build: ./frontend
+    image: 209314125202.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:latest
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
-    depends_on:
-      - backend
+      - "80:80"
+
