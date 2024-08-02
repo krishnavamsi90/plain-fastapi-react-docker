@@ -81,20 +81,31 @@ jobs:
    - name: Checkout code
      uses: actions/checkout@v3
 
-   - name: SSH and Deploy
+   - name: Copy Scripts to EC2 Instance
      run: |
-       echo "$PRIVATE_KEY" > private_key
-       chmod 600 private_key
+       echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+       scp -o StrictHostKeyChecking=no -i private_key script/stop_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
+       scp -o StrictHostKeyChecking=no -i private_key script/start_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
    
-       # Run stop_container script
+   - name: SSH and Deploy - Set Execute Permissions and Run Scripts
+     run: |
+       echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
        ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+         # Set execute permissions for scripts
          chmod +x /home/ubuntu/stop_container.sh
+         chmod +x /home/ubuntu/start_container.sh
+   
+         # Export environment variables
+         export AWS_REGION=${{ secrets.AWS_REGION }}
+         export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+   
+         # Run stop_container script
          /home/ubuntu/stop_container.sh
+         echo "stop_container.sh completed successfully."
+   
+         # Run start_container script
+         /home/ubuntu/start_container.sh
+         echo "start_container.sh completed successfully."
        '
    
-       # Run start_container script
-       ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-         chmod +x /home/ubuntu/start_container.sh
-         /home/ubuntu/start_container.sh
-       '
    
