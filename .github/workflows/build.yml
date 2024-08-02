@@ -86,7 +86,14 @@ jobs:
       echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
       scp -o StrictHostKeyChecking=no -i private_key script/stop_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
       scp -o StrictHostKeyChecking=no -i private_key script/start_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
-
+    
+   - name: SSH and Deploy - Set Execute Permissions
+     run: |
+      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+      ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+        chmod +x /home/ubuntu/stop_container.sh
+        chmod +x /home/ubuntu/start_container.sh
+      '
    - name: SSH and Deploy - Stop and Clean Up
      run: |
       echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
