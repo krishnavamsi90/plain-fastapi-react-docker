@@ -9,14 +9,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: ${{ secrets.dev.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.dev.AWS_ACCOUNT_ID }}
-      IMAGE_REPO_NAME: ${{ secrets.dev.IMAGE_REPO_NAME }}
-      IMAGE_REPO_NAME1: ${{ secrets.dev.IMAGE_REPO_NAME1 }}
-      IMAGE_TAG: ${{ secrets.dev.IMAGE_TAG }}
-      SECRET_KEY: ${{ secrets.dev.SECRET_KEY }}
-      REGION: ${{ secrets.dev.REGION }}
+    environment:
+      name: Dev  # Specifies the environment name
 
     steps:
     - name: Checkout code
@@ -28,6 +22,12 @@ jobs:
     - name: Log in to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry-type: 'private'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
 
     - name: Build and tag Docker image for backend
       run: |
