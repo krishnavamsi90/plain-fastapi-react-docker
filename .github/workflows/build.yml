@@ -19,7 +19,7 @@ jobs:
       IMAGE_REPO_NAME1: ${{ secrets.IMAGE_REPO_NAME1 }}
       IMAGE_TAG: ${{ secrets.IMAGE_TAG }}  # Fetch the IMAGE_TAG from GitHub secrets
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      REGION: ${{ secrets.REGION }}
+      REGION: ${{ vars.REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
