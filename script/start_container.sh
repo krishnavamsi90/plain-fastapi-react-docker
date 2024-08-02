@@ -3,8 +3,8 @@ set -e
 
 cd /home/ubuntu
 
-TOKEN=$(aws ecr get-login-password --region ap-southeast-1)
-docker login --username AWS --password-stdin 209314125202.dkr.ecr.ap-southeast-1.amazonaws.com <<< "$TOKEN"
+TOKEN=$(aws ecr get-login-password --region $AWS_REGION)
+docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com <<< "$TOKEN"
 
 
 docker compose up -d 

@@ -64,70 +64,47 @@ jobs:
   #       docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG
 
   deploy:
-    runs-on: ubuntu-latest
-    # needs: build-and-deploy  # Ensure deploy job runs after build-and-deploy
+   runs-on: ubuntu-latest
+   # Ensure deploy job runs after build-and-deploy
 
-    environment:
-      name: Dev  # Specifies the environment name
+   environment:
+    name: Dev  # Specifies the environment name
 
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-      USER_NAME: ${{ secrets.USER_NAME }}
-      HOSTNAME: ${{ secrets.HOSTNAME }}
+   env:
+    AWS_REGION: ${{ secrets.AWS_REGION }}
+    AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+    PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+    USER_NAME: ${{ secrets.USER_NAME }}
+    HOSTNAME: ${{ secrets.HOSTNAME }}
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+   steps:
+   - name: Checkout code
+     uses: actions/checkout@v3
 
-    - name: SSH and Deploy - Stop and Clean Up
-      run: |
-        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-        ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-          #!/bin/bash
-          set -e
+   - name: Copy Scripts to EC2 Instance
+     run: |
+      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+      scp -o StrictHostKeyChecking=no -i private_key script/stop_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
+      scp -o StrictHostKeyChecking=no -i private_key script/start_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
 
-          cd /home/ubuntu
+   - name: SSH and Deploy - Stop and Clean Up
+     run: |
+      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+      ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+        #!/bin/bash
+        set -e
 
-          # Print current working directory
-          echo "Current directory: $(pwd)"
+        # Run stop_container script
+        /home/ubuntu/stop_container.sh
+      '
 
-          # List files in the current directory
-          ls -l
+   - name: SSH and Deploy - Pull New Images and Start Containers
+     run: |
+      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+      ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+        #!/bin/bash
+        set -e
 
-          # Stop the running container (if any)
-          docker compose down
-
-          # Remove all Docker images
-          IMAGES=$(docker images -q)
-          if [ -n "${IMAGES}" ]; then
-              docker rmi ${IMAGES}
-          else
-              echo "No images to remove."
-          fi
-
-          # Stop and remove all Docker containers
-          CONTAINERS=$(docker ps -aq)
-          if [ -n "${CONTAINERS}" ]; then
-              docker stop ${CONTAINERS}
-              docker container prune -f
-          else
-              echo "No containers to stop or remove."
-          fi
-        '
-
-    - name: SSH and Deploy - Pull New Images and Start Containers
-      run: |
-        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-        ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-          #!/bin/bash
-          set -e
-
-          cd /home/ubuntu
-
-          TOKEN=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
-          docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com <<< "$TOKEN"
-
-          docker compose up -d
-        '
+        # Run start_container script
+        /home/ubuntu/start_container.sh
+      '
