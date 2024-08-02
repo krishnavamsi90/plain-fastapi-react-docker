@@ -17,7 +17,7 @@ jobs:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       IMAGE_REPO_NAME: ${{ secrets.IMAGE_REPO_NAME }}
       IMAGE_REPO_NAME1: ${{ secrets.IMAGE_REPO_NAME1 }}
-      IMAGE_TAG: ${{ vars.IMAGE_TAG }}  # Use the variable from the Dev environment
+      IMAGE_TAG: ${{ secrets.IMAGE_TAG }}  # Fetch the IMAGE_TAG from GitHub secrets
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       REGION: ${{ secrets.REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -36,13 +36,11 @@ jobs:
       with:
         registry-type: 'private'
 
-
     - name: Debug Docker Tag
       run: |
-         echo "Docker tag for backend: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
-         echo "Docker tag for frontend: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG"
+        echo "Docker tag for backend: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
+        echo "Docker tag for frontend: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG"
       
-
     - name: Build and tag Docker image for backend
       run: |
         cd backend/
@@ -64,13 +62,13 @@ jobs:
     - name: Push Docker image to Amazon ECR for frontend
       run: |
         docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG
+
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-deploy  # Ensure deploy job runs after build-and-deploy
 
     environment:
       name: Dev  # Specifies the environment name
-
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -115,4 +113,21 @@ jobs:
               docker stop ${CONTAINERS}
               docker container prune -f
           else
-              echo "No containers to stop or
+              echo "No containers to stop or remove."
+          fi
+        '
+
+    - name: SSH and Deploy - Pull New Images and Start Containers
+      run: |
+        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+        ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          #!/bin/bash
+          set -e
+
+          cd /home/ubuntu
+
+          TOKEN=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
+          docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com <<< "$TOKEN"
+
+          docker compose up -d
+        '
