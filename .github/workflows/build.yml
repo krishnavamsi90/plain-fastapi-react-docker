@@ -81,40 +81,20 @@ jobs:
    - name: Checkout code
      uses: actions/checkout@v3
 
-   - name: Copy Scripts to EC2 Instance
+   - name: SSH and Deploy
      run: |
-      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-      scp -o StrictHostKeyChecking=no -i private_key script/stop_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
-      scp -o StrictHostKeyChecking=no -i private_key script/start_container.sh ${USER_NAME}@${HOSTNAME}:/home/ubuntu/
-    
-   - name: SSH and Deploy - Set Execute Permissions
-     run: |
-      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-      ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-        chmod +x /home/ubuntu/stop_container.sh
-        chmod +x /home/ubuntu/start_container.sh
-      '
-   - name: SSH and Deploy - Stop and Clean Up
-     run: |
-      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-      ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-        #!/bin/bash
-        set -e
-
-        # Run stop_container script
-        /home/ubuntu/stop_container.sh
-      '
-
-   - name: SSH and Deploy - Pull New Images and Start Containers
-     run: |
-      echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-      ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-        #!/bin/bash
-        set -e
-        
-        export AWS_REGION=${{ secrets.AWS_REGION }}
-        export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-
-        # Run start_container script
-        /home/ubuntu/start_container.sh
-      '
+       echo "$PRIVATE_KEY" > private_key
+       chmod 600 private_key
+   
+       # Run stop_container script
+       ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+         chmod +x /home/ubuntu/stop_container.sh
+         /home/ubuntu/stop_container.sh
+       '
+   
+       # Run start_container script
+       ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+         chmod +x /home/ubuntu/start_container.sh
+         /home/ubuntu/start_container.sh
+       '
+   
