@@ -20,6 +20,8 @@ jobs:
       IMAGE_TAG: ${{ vars.IMAGE_TAG }}  # Use the variable from the Dev environment
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       REGION: ${{ secrets.REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
     - name: Checkout code
@@ -33,6 +35,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
       with:
         registry-type: 'private'
+
 
     - name: Debug Docker Tag
       run: |
