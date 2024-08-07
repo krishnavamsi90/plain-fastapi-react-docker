@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20-alpine as build  # Updated to the latest stable Node.js LTS version
+FROM node:20-alpine AS build  # Updated to the latest stable Node.js LTS version
 
 WORKDIR /app
 
