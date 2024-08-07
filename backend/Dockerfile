@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.7
+FROM python:3.11-slim
 
 
 ARG SECRET_KEY
@@ -13,6 +13,12 @@ WORKDIR /app
 
 # Copy the requirements file and install dependencies
 COPY requirements.txt /app
+
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the FastAPI app code into the container

@@ -1,4 +1,5 @@
-FROM node:16-alpine as build
+# Stage 1: Build
+FROM node:20-alpine as build  # Updated to the latest stable Node.js LTS version
 
 WORKDIR /app
 
@@ -11,8 +12,8 @@ COPY . .
 RUN npm run build
 
 
-# Use Nginx as the production server
-FROM nginx:1.21.3-alpine
+# Stage 2: Production
+FROM nginx:1.25.0-alpine  # Updated to the latest stable Nginx version
 
 COPY --from=build /app/build /usr/share/nginx/html
 
