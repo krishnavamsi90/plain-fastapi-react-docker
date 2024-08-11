@@ -81,9 +81,7 @@ jobs:
           --parameters 'commands=[
             "export AWS_REGION=${{ secrets.AWS_REGION }}", 
             "export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}", 
-            "chmod +x /home/ubuntu/stop_container.sh", 
-            "chmod +x /home/ubuntu/start_container.sh", 
-            "/home/ubuntu/stop_container.sh", 
-            "/home/ubuntu/start_container.sh"
+            "/opt/stop_container.sh", 
+            "/opt/start_container.sh"
           ]'
     
