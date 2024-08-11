@@ -70,5 +70,13 @@ jobs:
         aws ssm send-command \
           --document-name "AWS-RunShellScript" \
           --targets "Key=instanceids,Values=${{ secrets.INSTANCE_ID }}" \
-          --region $AWS_REGION \
-          --parameters 'commands=["export AWS_REGION='${{ secrets.AWS_REGION }}'", "export AWS_ACCOUNT_ID='${{ secrets.AWS_ACCOUNT_ID }}'", "chmod +x /home/ubuntu/stop_container.sh", "chmod +x /home/ubuntu/start_container.sh", "/home/ubuntu/stop_container.sh", "/home/ubuntu/start_container.sh"]'
+          --region ${{ secrets.AWS_REGION }} \
+          --parameters 'commands=[
+            "export AWS_REGION=${{ secrets.AWS_REGION }}", 
+            "export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}", 
+            "chmod +x /home/ubuntu/stop_container.sh", 
+            "chmod +x /home/ubuntu/start_container.sh", 
+            "/home/ubuntu/stop_container.sh", 
+            "/home/ubuntu/start_container.sh"
+          ]'
+    
