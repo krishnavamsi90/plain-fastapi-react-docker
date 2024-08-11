@@ -6,57 +6,57 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  # build:
+  #   runs-on: ubuntu-latest
 
-    environment:
-      name: Dev  # Specifies the environment name
+  #   environment:
+  #     name: Dev  # Specifies the environment name
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+  #   - name: Set up Docker Buildx
+  #     uses: docker/setup-buildx-action@v2
 
-    - name: Set up AWS CLI
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+  #   - name: Set up AWS CLI
+  #     uses: aws-actions/configure-aws-credentials@v2
+  #     with:
+  #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #       aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Log in to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-      with:
-        registry-type: 'private'
+  #   - name: Log in to Amazon ECR
+  #     id: login-ecr
+  #     uses: aws-actions/amazon-ecr-login@v2
+  #     with:
+  #       registry-type: 'private'
 
-    - name: Build and tag Docker image for backend
-      run: |
-        cd backend/
-        echo "Building Docker image..."
-        docker build --build-arg SECRET_KEY=${{ secrets.SECRET_KEY }} --build-arg REGION=${{ secrets.REGION }} -t ${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }} .
-        docker tag ${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }}
+  #   - name: Build and tag Docker image for backend
+  #     run: |
+  #       cd backend/
+  #       echo "Building Docker image..."
+  #       docker build --build-arg SECRET_KEY=${{ secrets.SECRET_KEY }} --build-arg REGION=${{ secrets.REGION }} -t ${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }} .
+  #       docker tag ${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }}
 
-    - name: Build and tag Docker image for frontend
-      run: |
-        cd frontend/
-        echo "Building Docker image..."
-        docker build -t ${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }} .
-        docker tag ${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }}
+  #   - name: Build and tag Docker image for frontend
+  #     run: |
+  #       cd frontend/
+  #       echo "Building Docker image..."
+  #       docker build -t ${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }} .
+  #       docker tag ${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }}
 
-    - name: Push Docker image to Amazon ECR for backend
-      run: |
-        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }}
+  #   - name: Push Docker image to Amazon ECR for backend
+  #     run: |
+  #       docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME }}:${{ vars.IMAGE_TAG }}
 
-    - name: Push Docker image to Amazon ECR for frontend
-      run: |
-        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }}
+  #   - name: Push Docker image to Amazon ECR for frontend
+  #     run: |
+  #       docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
 
     environment:
       name: Dev  # Specifies the environment name
@@ -65,29 +65,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Copy Scripts to EC2 Instance
+    - name: Run SSM Command
       run: |
-        echo "${{ secrets.PRIVATE_KEY }}" > private_key && chmod 600 private_key
-        scp -o StrictHostKeyChecking=no -i private_key script/stop_container.sh ${{ secrets.USER_NAME }}@${{ secrets.HOSTNAME }}:/home/ubuntu/
-        scp -o StrictHostKeyChecking=no -i private_key script/start_container.sh ${{ secrets.USER_NAME }}@${{ secrets.HOSTNAME }}:/home/ubuntu/
-
-    - name: Set Execute Permissions and Run Scripts in EC2 Instance
-      run: |
-        echo "${{ secrets.PRIVATE_KEY }}" > private_key && chmod 600 private_key
-        ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.USER_NAME }}@${{ secrets.HOSTNAME }} '
-          # Set execute permissions for scripts
-          chmod +x /home/ubuntu/stop_container.sh
-          chmod +x /home/ubuntu/start_container.sh
-
-          # Export environment variables
-          export AWS_REGION=${{ secrets.AWS_REGION }}
-          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-
-          # Run stop_container script
-          /home/ubuntu/stop_container.sh
-          echo "stop_container.sh completed successfully."
-
-          # Run start_container script
-          /home/ubuntu/start_container.sh
-          echo "start_container.sh completed successfully."
-        '
+        aws ssm send-command \
+          --document-name "AWS-RunShellScript" \
+          --targets "Key=instanceids,Values=${{ secrets.INSTANCE_ID }}" \
+          --region $AWS_REGION \
+          --parameters 'commands=["export AWS_REGION='${{ secrets.AWS_REGION }}'", "export AWS_ACCOUNT_ID='${{ secrets.AWS_ACCOUNT_ID }}'", "chmod +x /home/ubuntu/stop_container.sh", "chmod +x /home/ubuntu/start_container.sh", "/home/ubuntu/stop_container.sh", "/home/ubuntu/start_container.sh"]'
