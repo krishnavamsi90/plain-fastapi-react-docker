@@ -43,6 +43,7 @@ jobs:
   #     run: |
   #       cd frontend/
   #       echo "Building Docker image..."
+
   #       docker build -t ${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }} .
   #       docker tag ${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.IMAGE_REPO_NAME1 }}:${{ vars.IMAGE_TAG }}
 
@@ -71,14 +72,15 @@ jobs:
 
     - name: Run SSM Command
       run: |
-        aws ssm send-command \
-          --document-name "AWS-RunShellScript" \
-          --targets "Key=instanceids,Values=${{ secrets.INSTANCE_ID }}" \
-          --region ${{ secrets.AWS_REGION }} \
-          --parameters 'commands=[
-            "export AWS_REGION=${{ secrets.AWS_REGION }}", 
-            "export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}", 
-            "/opt/stop_container.sh", 
-            "/opt/start_container.sh"
-          ]'
+        echo ${{secrets.IMAGE_REPO_NAME1}} | sed 's/./& /g'
+        # aws ssm send-command \
+        #   --document-name "AWS-RunShellScript" \
+        #   --targets "Key=instanceids,Values=${{ secrets.INSTANCE_ID }}" \
+        #   --region ${{ secrets.AWS_REGION }} \
+        #   --parameters 'commands=[
+        #     "export AWS_REGION=${{ secrets.AWS_REGION }}", 
+        #     "export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}", 
+        #     "/opt/stop_container.sh", 
+        #     "/opt/start_container.sh"
+        #   ]'
     
