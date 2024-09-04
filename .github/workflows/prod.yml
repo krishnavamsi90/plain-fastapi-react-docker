@@ -1,9 +1,7 @@
 name: Test Pipeline
 
 on:
-  push :
-    branches:
-      - Main
+  workflow_dispatch:
 
 jobs:
   # build:
@@ -60,7 +58,7 @@ jobs:
     # needs: build 
 
     environment:
-      name: Dev  # Specifies the environment name
+      name: prod  # Specifies the environment name
 
     steps:
     - name: Set up AWS CLI
@@ -70,17 +68,17 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
 
-    # - name: Run SSM Command
-    #   run: |
-    #     echo ${{secrets.IMAGE_REPO_NAME1}} | sed 's/./& /g'
-    #     # aws ssm send-command \
-    #     #   --document-name "AWS-RunShellScript" \
-    #     #   --targets "Key=instanceids,Values=${{ secrets.INSTANCE_ID }}" \
-    #     #   --region ${{ secrets.AWS_REGION }} \
-    #     #   --parameters 'commands=[
-    #     #     "export AWS_REGION=${{ secrets.AWS_REGION }}", 
-    #     #     "export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}", 
-    #     #     "/opt/stop_container.sh", 
-    #     #     "/opt/start_container.sh"
-    #     #   ]'
+    - name: Run SSM Command
+      run: |
+        echo ${{secrets.IMAGE_REPO_NAME1}} | sed 's/./& /g'
+        # aws ssm send-command \
+        #   --document-name "AWS-RunShellScript" \
+        #   --targets "Key=instanceids,Values=${{ secrets.INSTANCE_ID }}" \
+        #   --region ${{ secrets.AWS_REGION }} \
+        #   --parameters 'commands=[
+        #     "export AWS_REGION=${{ secrets.AWS_REGION }}", 
+        #     "export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}", 
+        #     "/opt/stop_container.sh", 
+        #     "/opt/start_container.sh"
+        #   ]'
     
